@@ -1,0 +1,35 @@
+---
+# Ansible cloud tools for lab based deployments
+# Copyright (C) 2020  Kevin Carter
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
+- name: Set libselinux name for python3
+  set_fact:
+    libselinux_python: python3-libselinux
+  when:
+    - ansible_facts['python_version'] is version('3.0', 'gt', strict=False)
+
+- name: Set libselinux name for python2
+  set_fact:
+    libselinux_python: libselinux-python
+  when:
+    - ansible_facts['python_version'] is version('3.0', 'lt', strict=True)
+
+- name: Install packages
+  become: true
+  package:
+    name: "{{ tripleo_sdk_developer_external_packages | union(tripleo_sdk_developer_system_packages) | union([libselinux_python]) }}"
+    state: present

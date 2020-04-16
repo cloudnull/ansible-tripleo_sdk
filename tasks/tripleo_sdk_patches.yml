@@ -1,0 +1,134 @@
+---
+# Ansible cloud tools for lab based deployments
+# Copyright (C) 2020  Kevin Carter
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+- name: Create delorian directories
+  file:
+    path: "{{ item }}"
+    state: "directory"
+  loop:
+    - "{{ tripleo_sdk_build_tools_dir }}/data"
+    - "{{ tripleo_sdk_build_tools_dir }}/patches"
+    - "{{ tripleo_sdk_build_tools_dir }}/rpms"
+    - "{{ tripleo_sdk_build_tools_dir }}/DLRN/data"
+
+- name: Create mock group
+  become: true
+  group:
+    name: mock
+    state: present
+
+- name: Add user to mock group
+  become: true
+  user:
+    name: "{{ ansible_user }}"
+    groups: mock
+    append: true
+
+- name: Push projects config
+  template:
+    dest: "{{ tripleo_sdk_build_tools_dir }}/DLRN/projects.ini"
+    src: projects.ini.j2
+
+- name: Fetch rdoinfo
+  git:
+    repo: "{{ tripleo_sdk_rdo_repo }}"
+    dest: "{{ tripleo_sdk_build_tools_dir }}/rdoinfo"
+    version: master
+
+- name: Cleanup repos with refspecs
+  file:
+    path: "{{ tripleo_sdk_build_tools_dir }}/patches/{{ item.url | basename }}"
+    state: absent
+  when:
+    - item.refs is defined
+  with_items: "{{ tripleo_sdk_developer_patches }}"
+
+- name: Clone patched repo(s)
+  git:
+    repo: "{{ item.url }}"
+    dest: "{{ tripleo_sdk_build_tools_dir }}/patches/{{ item.url | basename }}"
+    refspec: '{{ item.refs | default(omit) }}'
+    version: "{{ item.version | default(((item.refs is defined) | ternary('FETCH_HEAD', omit))) }}"
+  with_items: "{{ tripleo_sdk_developer_patches }}"
+
+- name: Force packages to rebuild
+  file:
+    path: "{{ tripleo_sdk_build_tools_dir }}/packages.created"
+    state: absent
+  when:
+    - tripleo_sdk_developer_rebuild_rpms | bool
+
+- name: Download the centos gpg key
+  get_url:
+    url: http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-Official
+    dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
+  when:
+    - (ansible_distribution | lower) != 'centos'
+
+- name: Set venv install fact
+  set_fact:
+    venv_install_list: |-
+      {% set install_in_venv = [] %}
+      {% for item in tripleo_sdk_developer_patches %}
+      {%   if item.get('install_in_venv', false) | bool %}
+      {%     set _ = install_in_venv.append(item.url | basename) %}
+      {%   endif %}
+      {% endfor %}
+      {{ install_in_venv }}
+
+- name: Venv block
+  when:
+    - (venv_install_list | length) > 0
+  block:
+    - name: Install developer pip packages
+      pip:
+        name: "{{ tripleo_sdk_build_tools_dir }}/patches/{{ item }}"
+        extra_args: '--force --upgrade'
+        virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
+        virtualenv_site_packages: no
+        virtualenv_python: "{{ ansible_python_interpreter }}"
+      with_items: "{{ venv_install_list }}"
+    - name: Notice venv install activated
+      debug:
+        msg: >-
+          Patches have been installed within a virtual environment. To access this
+          installation activate run `source {{ tripleo_sdk_build_tools_dir }}/venv/bin/activate`.
+
+- name: Create package build script
+  template:
+    src: rpm_build.sh.j2
+    dest: "{{ tripleo_sdk_build_tools_dir }}/build-packages.sh"
+    mode: '0755'
+
+- name: Notice
+  debug:
+    msg: "Package build script is ready at: {{ tripleo_sdk_build_tools_dir }}/build-packages.sh"
+
+- name: Build script block
+  when:
+    - tripleo_sdk_developer_run_build | bool
+  block:
+    - name: Run build script
+      shell: "{{ item }}"
+      loop:
+        - tmux new-session -d -s tripleo-sdk -n deploy-tripleo || true
+        - tmux new-window -n build-packages -t 0 || true
+        - tmux select-window -t 0
+        - tmux send-keys "bash -c '{{ tripleo_sdk_build_tools_dir }}/build-packages.sh'" C-m
+    - name: Build script notice
+      debug:
+        msg: "Build script has started in tmux session `tripleo-sdk` in window `build-packages`"

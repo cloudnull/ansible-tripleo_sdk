@@ -1,0 +1,47 @@
+#!/usr/bin/env bash
+
+set -ev
+set -o pipefail
+
+source {{ tripleo_sdk_build_tools_dir }}/venv/bin/activate
+
+export TRIPLEO_ROOT={{ tripleo_sdk_build_tools_dir }}
+
+sudo chown -R $(whoami):$(whoami) {{ tripleo_sdk_build_tools_dir }}
+sudo rm -rf {{ tripleo_sdk_build_tools_dir }}/data/repos
+
+pushd {{ tripleo_sdk_build_tools_dir }}/DLRN
+    if [[ ! -f "{{ tripleo_sdk_build_tools_dir }}/packages.created" ]]; then
+        export PACKAGE_NAMES=""
+{% for patch in tripleo_sdk_developer_patches %}
+{%   if not (patch.install_in_venv | default(false) | bool) %}
+        PROJECT_NAME="$({{ tripleo_sdk_build_tools_dir }}/venv/bin/rdopkg findpkg -l {{ tripleo_sdk_build_tools_dir }}/rdoinfo -s "{{ patch.url | basename }}" | awk '/^name/ {print $2}')"
+        sudo mkdir -p "{{ tripleo_sdk_build_tools_dir }}/data/${PROJECT_NAME}"
+        sudo rsync -a "{{ tripleo_sdk_build_tools_dir }}/patches/{{ patch.url | basename }}/" "{{ tripleo_sdk_build_tools_dir }}/data/${PROJECT_NAME}/"
+        export PACKAGE_NAMES+="--package-name ${PROJECT_NAME} "
+{%   endif %}
+{% endfor %}
+
+        sudo find {{ tripleo_sdk_build_tools_dir }}/rpms/ -name '*rpm' -exec rm -f {}  \;
+        sudo {{ tripleo_sdk_build_tools_dir }}/venv/bin/dlrn ${PACKAGE_NAMES} \
+                                        --config-file {{ tripleo_sdk_build_tools_dir }}/DLRN/projects.ini \
+                                        --head-only \
+                                        --local \
+                                        --no-repo \
+                                        --dev \
+                                        --info-repo {{ tripleo_sdk_build_tools_dir }}/rdoinfo \
+                                        --dev &> {{ tripleo_sdk_build_tools_dir }}/packages.log
+        if [[ ! $? == 0 ]]; then
+          echo "Failed to build, check logs: {{ tripleo_sdk_build_tools_dir }}/packages.log"
+          exit 99
+        else
+          sudo touch {{ tripleo_sdk_build_tools_dir }}/packages.created
+          sudo find {{ tripleo_sdk_build_tools_dir }}/data/ -name '*.rpm' ! -name '*src.rpm' -exec cp -L {} {{ tripleo_sdk_build_tools_dir }}/rpms/ \;
+        fi
+    fi
+popd
+
+if [[ ! -z "$(find {{ tripleo_sdk_build_tools_dir }}/rpms/ -name '*.rpm' ! -name '*src.rpm')" ]]; then
+    echo -e "Installing RPMS"
+    sudo $(command -v dnf || command -v yum) -y install {{ tripleo_sdk_build_tools_dir }}/rpms/*.rpm
+fi

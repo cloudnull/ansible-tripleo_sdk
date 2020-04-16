@@ -1,0 +1,58 @@
+---
+# Ansible cloud tools for lab based deployments
+# Copyright (C) 2020  Kevin Carter
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+# All variables intended for modification should be placed in this file.
+
+# TripleO development tools location
+tripleo_sdk_build_tools_dir: "{{ ansible_env.HOME }}/tripleo-sdk"
+
+# TripleO RDO repo, this is used to build packages as needed.
+tripleo_sdk_rdo_repo: "https://github.com/redhat-openstack/rdoinfo"
+
+# Enable or disable the rebuild of existing patches and packages.
+tripleo_sdk_developer_rebuild_rpms: false
+
+# Enable or disable the execution of the RPM build script.
+tripleo_sdk_developer_run_build: true
+
+# List of patches to apply to a given environment.
+# NOTICE(cloudnull): One patch is a gerrit review, the other is an external
+#                    repo from github.
+# tripleo_developer_patches:
+#   - url: "https://review.opendev.org/openstack/tripleo-heat-templates"
+#     refs: "refs/changes/86/683286/13"
+#     version: FETCH_HEAD
+#     install_in_venv: true || false
+tripleo_sdk_developer_patches: []
+
+# List of repositories to enable. This value is generally OS specific and should be automatically loaded from a file within vars/
+tripleo_sdk_repos: "{{ _tripleo_sdk_repos | default([]) }}"
+
+# List of external packages to be installed. This expects each item to be a URL.
+# This value is generally OS specific and should be automatically loaded from a
+# file within vars/
+tripleo_sdk_developer_external_packages: "{{ _tripleo_sdk_developer_external_packages | default([]) }}"
+
+# System packages to be installed. This value is generally OS specific and should be automatically loaded from a file within vars/
+tripleo_sdk_developer_system_packages: "{{ _tripleo_sdk_developer_system_packages | default([]) }}"
+
+# List of python package to be installed within the SDK virtual environment.
+tripleo_sdk_developer_py_venv_packages:
+  - dlrn
+  - rdopkg
+  - glances
+  - selinux

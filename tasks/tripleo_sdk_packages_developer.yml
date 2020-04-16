@@ -1,0 +1,36 @@
+---
+# Ansible cloud tools for lab based deployments
+# Copyright (C) 2020  Kevin Carter
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+- name: Install rdopkg
+  pip:
+    name: "{{ tripleo_sdk_developer_py_venv_packages }}"
+    virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
+    virtualenv_site_packages: yes
+    virtualenv_python: "{{ ((ansible_distribution | lower) != 'centos') | ternary('python3', omit) }}"
+
+- name: Install and update pip in venv
+  pip:
+    name: pip
+    state: latest
+    virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
+    extra_args: '--upgrade'
+
+- include_tasks: tripleo_sdk_patches.yml
+  when:
+    - (tripleo_sdk_developer_patches | length) > 0
+  vars:
+    ansible_python_interpreter: "{{ tripleo_sdk_build_tools_dir }}/venv/bin/python"
