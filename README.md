@@ -1,4 +1,4 @@
-# Software development kit for TripleO developers
+# Software Development Kit for TripleO Developers
 
 This Ansible role will setup an environment suited for TripleO development.
 The role will apply patches and build packages as required or instructed,

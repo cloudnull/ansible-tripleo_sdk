@@ -132,3 +132,8 @@
     - name: Build script notice
       debug:
         msg: "Build script has started in tmux session `tripleo-sdk` in window `build-packages`"
+    - name: Block on build execution
+      wait_for:
+        path: "{{ tripleo_sdk_build_tools_dir }}/packages.created"
+      when:
+        - tripleo_sdk_developer_run_build_with_block | bool
