@@ -36,6 +36,8 @@ _tripleo_sdk_developer_external_packages:
   - https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/m/mock-1.4.21-1.el8.noarch.rpm
   - https://download-ib01.fedoraproject.org/pub/epel/8/Everything/aarch64/Packages/m/mock-core-configs-31.7-1.el8.noarch.rpm
   - https://download-ib01.fedoraproject.org/pub/epel/8/Everything/aarch64/Packages/d/distribution-gpg-keys-1.37-1.el8.noarch.rpm
+  - https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/p/python3-pyroute2-0.5.3-3.el8.noarch.rpm
+
 
 _tripleo_sdk_repos:
   - path: "/etc/yum.repos.d/CentOS-PowerTools.repo"

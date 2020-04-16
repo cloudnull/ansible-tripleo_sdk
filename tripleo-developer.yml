@@ -17,7 +17,7 @@
 
 
 - name: Example tripleo developer setup
-  hosts: "undercloud"
+  hosts: "novaless-compute1-vm-test-3"
   any_errors_fatal: true
   gather_facts: true
   roles:
