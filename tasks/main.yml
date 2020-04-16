@@ -37,3 +37,5 @@
 - include_tasks: tripleo_sdk_packages_distro.yml
 
 - include_tasks: tripleo_sdk_packages_developer.yml
+
+- include_tasks: tripleo_sdk_fake_ci.yml

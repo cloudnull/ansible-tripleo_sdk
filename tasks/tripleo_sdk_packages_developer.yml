@@ -18,7 +18,7 @@
 
 - name: Install and update pip in venv
   pip:
-    name: 'pip>19,<20'  # stop-gap because pip20 seems to be buggy.
+    name: ['pip>19,<20', 'setuptools']  # stop-gap because pip20 seems to be buggy.
     state: latest
     virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
     virtualenv_site_packages: yes

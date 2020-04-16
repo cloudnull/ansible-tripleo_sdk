@@ -15,45 +15,16 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-driver:
-  name: docker
 
-log: true
+- name: Basic ci setup
+  become: true
+  block:
+    - name: Create ci directories
+      file:
+        path: "/etc/ci"
+        state: "directory"
 
-platforms:
-  - name: centos7
-    hostname: centos7
-    image: centos:7
-    dockerfile: Dockerfile
-    pkg_extras: python-setuptools
-    easy_install:
-      - pip
-    environment: &env
-      http_proxy: "{{ lookup('env', 'http_proxy') }}"
-      https_proxy: "{{ lookup('env', 'https_proxy') }}"
-
-  - name: centos8
-    hostname: centos8
-    image: centos:8
-    dockerfile: Dockerfile
-    pkg_extras: python*-setuptools
-    environment:
-      <<: *env
-
-provisioner:
-  name: ansible
-  log: true
-  env:
-    ANSIBLE_STDOUT_CALLBACK: yaml
-
-scenario:
-  test_sequence:
-    - destroy
-    - create
-    - prepare
-    - converge
-    - verify
-    - destroy
-
-verifier:
-  name: testinfra
+    - name: Create ci mirror file
+      file:
+        path: "/etc/ci/mirror_info.sh"
+        state: "touch"

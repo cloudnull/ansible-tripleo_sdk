@@ -59,6 +59,7 @@ tripleo_sdk_developer_py_venv_packages:
   - rdopkg
   - glances
   - selinux
+  - molecule
 
 # Enable or disable the installation of the upstream tripleo developer repos
 tripleo_sdk_developer_install_repos: true

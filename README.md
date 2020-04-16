@@ -10,7 +10,7 @@ effectively contribute to TripleO.
 * Repository installation, used to ensure relevant packages are available
   within the development environment.
 * Package building using git checkouts or upstream gerrit reviews.
-* The setup of a molecule test running environment with podman and/or docker.
+* The setup of a molecule test running environment with podman.
 
 ## Role Installation
 
