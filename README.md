@@ -5,7 +5,13 @@ The role will apply patches and build packages as required or instructed,
 which automates the hassle of most of the development tasks required to
 effectively contribute to TripleO.
 
-### Role Installation
+### Role Overview
+
+* Repository installation, used to ensure relevant packages are available
+  within the development environment.
+* Package building using git checkouts or upstream gerrit reviews.
+
+## Role Installation
 
 Installing the role is simple and can be expressed in a single command
 
