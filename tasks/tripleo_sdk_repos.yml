@@ -27,6 +27,8 @@
 
 - name: TripleO repositories setup
   become: true
+  when:
+    - tripleo_sdk_developer_install_repos | bool
   block:
     - name: Fetch latest repo version
       uri:
