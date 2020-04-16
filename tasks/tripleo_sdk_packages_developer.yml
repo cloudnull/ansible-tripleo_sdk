@@ -15,22 +15,61 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-- name: Install rdopkg
-  pip:
-    name: "{{ tripleo_sdk_developer_py_venv_packages }}"
-    virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
-    virtualenv_site_packages: yes
-    virtualenv_python: "{{ ((ansible_distribution | lower) != 'centos') | ternary('python3', omit) }}"
 
 - name: Install and update pip in venv
   pip:
     name: 'pip>19,<20'  # stop-gap because pip20 seems to be buggy.
     state: latest
     virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
-    extra_args: '--upgrade'
+    virtualenv_site_packages: yes
+    extra_args: '--upgrade --force'
+
+- name: Install rdopkg
+  pip:
+    name: "{{ tripleo_sdk_developer_py_venv_packages }}"
+    virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
+    virtualenv_site_packages: yes
+    virtualenv_python: "{{ ((ansible_distribution | lower) != 'centos') | ternary('python3', omit) }}"
+  async: 1000
+  poll: 0
+  register: pip_sleeper
 
 - include_tasks: tripleo_sdk_patches.yml
   when:
     - (tripleo_sdk_developer_patches | length) > 0
   vars:
     ansible_python_interpreter: "{{ tripleo_sdk_build_tools_dir }}/venv/bin/python"
+
+- name: 'PIP - check on async task'
+  async_status:
+    jid: "{{ pip_sleeper.ansible_job_id }}"
+  register: job_result
+  until: job_result.finished
+  retries: 30
+
+- name: Force packages to rebuild
+  file:
+    path: "{{ tripleo_sdk_build_tools_dir }}/packages.created"
+    state: absent
+  when:
+    - tripleo_sdk_developer_rebuild_rpms | bool
+
+- name: Build script block
+  when:
+    - tripleo_sdk_developer_run_build | bool
+  block:
+    - name: Run build script
+      shell: "{{ item }}"
+      loop:
+        - tmux new-session -d -s tripleo-sdk -n deploy-tripleo || true
+        - tmux new-window -n build-packages -t 0 || true
+        - tmux select-window -t 0
+        - tmux send-keys "bash -c '{{ tripleo_sdk_build_tools_dir }}/build-packages.sh'" C-m
+    - name: Build script notice
+      debug:
+        msg: "Build script has started in tmux session `tripleo-sdk` in window `build-packages`"
+    - name: Block on build execution
+      wait_for:
+        path: "{{ tripleo_sdk_build_tools_dir }}/packages.created"
+      when:
+        - tripleo_sdk_developer_run_build_with_block | bool
