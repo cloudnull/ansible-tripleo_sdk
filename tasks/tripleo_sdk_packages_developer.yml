@@ -65,6 +65,8 @@
         - tmux new-window -n build-packages -t 0 || true
         - tmux select-window -t 0
         - tmux send-keys "bash -c '{{ tripleo_sdk_build_tools_dir }}/build-packages.sh'" C-m
+      tags:
+        - skip_ansible_lint
     - name: Build script notice
       debug:
         msg: "Build script has started in tmux session `tripleo-sdk` in window `build-packages`"
