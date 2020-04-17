@@ -16,9 +16,19 @@ effectively contribute to TripleO.
 
 Installing the role is simple and can be expressed in a single command
 
+###### Role install using the git repository
+
 ``` shell
-ansible-galaxy install --force git+https://github.com/cloudnull/ansible-role-tripleo_sdk,master,tripleo_sdk
+ansible-galaxy install --force git+https://github.com/cloudnull/ansible-tripleo_sdk,master,tripleo_sdk
 ```
+
+###### Role install using the git repository
+
+``` shell
+ansible-galaxy install cloudnull.ansible_tripleo_sdk,master,tripleo_sdk
+```
+
+###### Role Requirements 
 
 This role can also be installed using a role requirements file.
 
