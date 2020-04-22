@@ -24,6 +24,7 @@
     value: "{{ item.value }}"
     backup: "{{ item.backup | bool }}"
   loop: "{{ tripleo_sdk_repos }}"
+  when: tripleo_sdk_repos is defined
 
 - name: TripleO repositories setup
   become: true
