@@ -18,7 +18,9 @@
 
 - name: Install and update pip in venv
   pip:
-    name: ['pip>19,<20', 'setuptools']  # stop-gap because pip20 seems to be buggy.
+    name:
+      - pip
+      - setuptools
     state: latest
     virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
     virtualenv_site_packages: yes
@@ -27,6 +29,7 @@
 - name: Install rdopkg
   pip:
     name: "{{ tripleo_sdk_developer_py_venv_packages }}"
+    extra_args: '--no-use-pep517'
     virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
     virtualenv_site_packages: yes
     virtualenv_python: "{{ ((ansible_distribution | lower) != 'centos') | ternary('python3', omit) }}"
