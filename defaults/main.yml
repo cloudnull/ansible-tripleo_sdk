@@ -69,3 +69,5 @@ tripleo_sdk_developer_repos: current-tripleo
 
 # Name of the branch to develop against.
 tripleo_sdk_developer_branch: master
+
+tripleo_external_packages: []

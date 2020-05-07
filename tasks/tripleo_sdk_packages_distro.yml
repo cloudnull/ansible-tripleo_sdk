@@ -28,8 +28,15 @@
   when:
     - ansible_facts['python_version'] is version('3.0', 'lt', strict=True)
 
+- include_tasks: tripleo_sdk_packages_external.yml
+  loop: "{{ tripleo_sdk_developer_external_packages }}"
+
+- name: Display discovered external packages
+  debug:
+    var: tripleo_external_packages
+
 - name: Install packages
   become: true
   package:
-    name: "{{ tripleo_sdk_developer_external_packages | union(tripleo_sdk_developer_system_packages) | union([libselinux_python]) }}"
+    name: "{{ tripleo_sdk_developer_system_packages | union([libselinux_python]) | union(tripleo_external_packages) }}"
     state: present
