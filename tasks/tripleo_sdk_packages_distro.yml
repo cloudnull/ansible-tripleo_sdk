@@ -33,10 +33,10 @@
 
 - name: Display discovered external packages
   debug:
-    var: tripleo_external_packages
+    var: tripleo_sdk_external_packages
 
 - name: Install packages
   become: true
   package:
-    name: "{{ tripleo_sdk_developer_system_packages | union([libselinux_python]) | union(tripleo_external_packages) }}"
+    name: "{{ tripleo_sdk_developer_system_packages | union([libselinux_python]) | union(tripleo_sdk_external_packages) }}"
     state: present

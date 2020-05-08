@@ -89,12 +89,16 @@
   block:
     - name: Install developer pip packages
       pip:
-        name: "{{ tripleo_sdk_build_tools_dir }}/patches/{{ item }}"
+        name: |-
+          {% set pkgs = [] %}
+          {% for item in venv_install_list %}
+          {%   set _ = pkgs.append(tripleo_sdk_build_tools_dir ~ '/patches/' ~ item) %}
+          {% endfor %}
+          {{ pkgs }}
         extra_args: '--force --upgrade'
         virtualenv: "{{ tripleo_sdk_build_tools_dir }}/venv"
         virtualenv_site_packages: no
         virtualenv_python: "{{ ansible_python_interpreter }}"
-      with_items: "{{ venv_install_list }}"
     - name: Notice venv install activated
       debug:
         msg: >-

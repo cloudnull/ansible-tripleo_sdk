@@ -8,9 +8,9 @@
 
 - name: Install package
   set_fact:
-    tripleo_external_packages: |-
-      {% set _ = tripleo_external_packages.append(
+    tripleo_sdk_external_packages: |-
+      {% set _ = tripleo_sdk_external_packages.append(
           item.url ~ '/' ~ (_package.content | regex_search('\"(' ~ item.name ~ '.*rpm)\"', multiline=True)).strip('\"')
         )
       %}
-      {{ tripleo_external_packages }}
+      {{ tripleo_sdk_external_packages }}
