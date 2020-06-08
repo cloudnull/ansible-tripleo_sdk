@@ -33,6 +33,8 @@
     - always
 
 - include_tasks: tripleo_sdk_repos.yml
+  when:
+    - not (ansible_distribution | lower) == 'redhat'
 
 - include_tasks: tripleo_sdk_packages_distro.yml
 
