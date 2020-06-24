@@ -66,6 +66,7 @@
   with_items: "{{ tripleo_sdk_developer_patches }}"
 
 - name: Download the centos gpg key
+  become: true
   get_url:
     url: http://mirror.centos.org/centos/RPM-GPG-KEY-CentOS-Official
     dest: /etc/pki/rpm-gpg/RPM-GPG-KEY-CentOS-Official
