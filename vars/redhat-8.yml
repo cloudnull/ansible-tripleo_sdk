@@ -36,6 +36,8 @@ _tripleo_sdk_developer_external_packages:
   - url: https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/m/
     name: mock-core-configs
   - url: https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/m/
+    name: mock-filesystem
+  - url: https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/m/
     name: mock
   - url: https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/d/
     name: distribution-gpg-keys
