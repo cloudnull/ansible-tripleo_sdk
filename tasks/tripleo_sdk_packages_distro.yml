@@ -40,3 +40,4 @@
   package:
     name: "{{ tripleo_sdk_developer_system_packages | union([libselinux_python]) | union(tripleo_sdk_external_packages) }}"
     state: present
+    disable_gpg_check: true
