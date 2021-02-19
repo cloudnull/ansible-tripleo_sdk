@@ -43,6 +43,8 @@ _tripleo_sdk_developer_external_packages:
     name: distribution-gpg-keys
   - url: https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/p/
     name: python3-pyroute2
+  - url: https://download-ib01.fedoraproject.org/pub/epel/8/Everything/x86_64/Packages/p/
+    name: python3-templated-dictionary
 
 _tripleo_sdk_repos:
   - path: "/etc/yum.repos.d/CentOS-PowerTools.repo"
